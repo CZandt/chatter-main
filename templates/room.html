@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+    <script   src="https://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+</head>
+<body>
+    <section class="hero is-info has-background-link">
+        <div class="hero-head">
+            <nav class="navbar " role="navigation" aria-label="main navigation">
+                <div id="navbarBasicExample" class="navbar-menu">
+                    <div class="navbar-start pl-2">
+                        <a href="/" class="navbar-item">Home</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </section>
+    <br/>
+
+<article  class='message container is-link'>
+    <div class="message-header">{{room}}</div>
+    <div class="message-body" id="display">
+    </div>
+</article>
+
+<script>
+$(document).ready(function(){
+
+setInterval(function(){
+    $.ajax({
+        type: 'GET',
+        url : "/getMessages/{{room}}/",
+        success: function(response){
+            console.log(response);
+            $("#display").empty();
+            for (var key in response.messages)
+            {
+                var temp="<div class=''><b class='has-text-dark is-size-4'>"+response.messages[key].user+"</b><p class='has-text-dark'>"+response.messages[key].value+"</p><span class='is-size-7 is-pulled-right'>"+response.messages[key].date+"</span></div></br>";
+                $("#display").append(temp);
+            }
+        },
+        error: function(response){
+            alert('An error occured')
+        }
+    });
+},1000);
+})
+</script>
+
+
+<div class="container has-text-centered">
+    <form id="post-form" >
+        {% csrf_token %}
+        <input type="hidden" name="username" id="username" value="{{username}}"/>
+        <input type="hidden" name="room_id" id="room_id" value="{{room_details.id}}"/>
+        <div class="columns">
+            <div class="column is-four-fifths">
+                <input type="text" name="message" id="message" width="100px" class="input"/>
+            </div>
+            <div class="column is-one-fifth">
+                <input type="submit" value="Send" class="button is-success">
+            </div>
+        <div/>
+    </form>
+</div>
+
+
+</body>
+
+<script type="text/javascript">
+  $(document).on('submit','#post-form',function(e){
+    e.preventDefault();
+
+    $.ajax({
+      type:'POST',
+      url:'/send',
+      data:{
+          username:$('#username').val(),
+          room_id:$('#room_id').val(),
+          message:$('#message').val(),
+        csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+      },
+      success: function(data){
+         //alert(data)
+      }
+    });
+    document.getElementById('message').value = ''
+  });
+</script>
+
+</html>
